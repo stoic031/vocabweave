@@ -1,6 +1,6 @@
 {
 	"name": "vocabweave",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Turn vocabulary notes into Anki flashcards, with optional AI-generated text and images.",
 	"main": "main.js",
 	"type": "module",

@@ -4,6 +4,14 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-09-28
+
+### Changed
+
+- Settings now use Obsidian's declarative settings API, so VocabWeave's settings show
+  up in Obsidian's settings search. Connection & profiles and the AI text/image
+  providers each open as their own page; an invalid media prefix is flagged inline.
+
 ## [1.0.0] - 2026-09-25
 
 Initial release of VocabWeave.
@@ -29,4 +37,5 @@ Initial release of VocabWeave.
 - Learning language and native language settings that AI results follow.
 - API keys kept in Obsidian's secret storage. No telemetry.
 
+[1.0.1]: https://github.com/stoic031/vocabweave/releases/tag/1.0.1
 [1.0.0]: https://github.com/stoic031/vocabweave/releases/tag/1.0.0

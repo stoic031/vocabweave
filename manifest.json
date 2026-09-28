@@ -1,7 +1,7 @@
 {
 	"id": "vocabweave",
 	"name": "VocabWeave",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"minAppVersion": "1.13.0",
 	"description": "Turn vocabulary notes into Anki flashcards, with optional AI-generated text and images.",
 	"author": "Andy Nguyen",

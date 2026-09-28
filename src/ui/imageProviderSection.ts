@@ -12,7 +12,6 @@ export function renderImageProviderSection(
 ): void {
 	renderProviderSection<ImageProviderConfig>(containerEl, plugin, {
 		cssClass: 'vocabweave-settings__image-provider',
-		heading: 'AI image provider',
 		activeDesc:
 			'Used to generate images for your cards. None means no image generation.',
 		defaultType: 'pollinations',

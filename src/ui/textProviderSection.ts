@@ -10,7 +10,6 @@ export function renderTextProviderSection(
 ): void {
 	renderProviderSection<TextProviderConfig>(containerEl, plugin, {
 		cssClass: 'vocabweave-settings__text-provider',
-		heading: 'AI text provider',
 		activeDesc:
 			'Used to fill fields and write image prompts. None means no AI calls.',
 		defaultType: 'openai',

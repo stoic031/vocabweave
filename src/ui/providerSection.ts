@@ -9,7 +9,6 @@ import {
 
 export interface ProviderSectionSpec<C extends AnyProviderConfig> {
 	cssClass: string;
-	heading: string; // 'AI text provider'
 	activeDesc: string;
 	kind: ProviderKindSpec<C>;
 	defaultType: C['type'];
@@ -33,7 +32,6 @@ export function renderProviderSection<C extends AnyProviderConfig>(
 
 	const render = () => {
 		el.empty();
-		new Setting(el).setName(spec.heading).setHeading();
 		const { list, activeId } = spec.read(settings);
 		const active = list.find((p) => p.id === activeId);
 

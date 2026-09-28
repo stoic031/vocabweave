@@ -2,16 +2,21 @@
 
 > Xem [`README.md`](README.md) cho tổng quan kiến trúc.
 
-**Bố cục:** để trang Settings đỡ dài, các mục bên dưới được gom vào 3 khối gấp/mở được
-(`<details>`/`<summary>` gốc của trình duyệt, không cần JS — `src/ui/collapsibleSection.ts`),
-không đổi thứ tự hay hành vi bên trong mỗi mục:
+**Bố cục:** dùng declarative settings API của Obsidian 1.13 (`getSettingDefinitions()`
+trong `src/ui/settingsTab.ts`) để mọi mục hiện trong ô tìm kiếm Settings của Obsidian.
+Tab chia 3 nhóm (group), không đổi hành vi bên trong mỗi mục:
 
-- **"Connection & profiles"** — mở sẵn (thiết lập cơ bản, hay sửa nhất). Gồm §6.1.
-- **"AI providers"** — đóng sẵn. Gồm Your language + Text/Image provider trong §6.2.
-- **"Sync & media"** — đóng sẵn. Gồm §6.3 + §6.4.
+- **Anki** — trang (page) **"Connection & profiles"**: §6.1 (URL, Connect, profiles),
+  vẫn render imperative bằng `renderConnectionSection`.
+- **AI** — **Your language** (dropdown declarative, key `nativeLanguage`), trang
+  **"AI text provider"** và **"AI image provider"** (§6.2, render imperative).
+- **Sync & media** — **Auto sync on save** (toggle, key `autoSyncOnSave`, §6.3) và
+  **Media prefix** (text, key `mediaPrefix`, validate bằng `isValidMediaPrefix`, lỗi hiện
+  inline dưới ô, §6.4).
 
-Trạng thái mở/đóng không lưu lại — mỗi lần mở tab Settings, Obsidian gọi lại `display()`
-nên luôn về đúng mặc định ở trên.
+Control declarative đọc/ghi thẳng `plugin.settings` qua `getControlValue`/`setControlValue`
+mặc định của `PluginSettingTab`. Trang imperative là `SectionPage` (subclass `SettingPage`);
+trang Connection huỷ listener profile khi rời trang (`hide()`).
 
 ## 6.1. Connection Section
 

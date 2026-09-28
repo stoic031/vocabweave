@@ -7,8 +7,15 @@ import {
 } from '../settings';
 import {
 	DEFAULT_ANKI_CONNECT_URL,
+	LANGUAGES,
 	PROFILE_CHANGED_EVENT,
 } from '../utils/constants';
+import type {
+	SettingDefinition,
+	SettingDefinitionGroup,
+	SettingDefinitionPage,
+	SettingTextControl,
+} from 'obsidian';
 
 class FakeTextComponent {
 	placeholder = '';
@@ -170,6 +177,11 @@ vi.mock('obsidian', () => ({
 		}
 	},
 	PluginSettingTab: class {},
+	SettingPage: class {
+		title = '';
+		containerEl = fakeDiv();
+		hide() {}
+	},
 }));
 
 const { deckNames, modelNames } = vi.hoisted(() => ({
@@ -189,7 +201,11 @@ const { toastSuccess, toastError } = vi.hoisted(() => ({
 }));
 vi.mock('./toast', () => ({ toastSuccess, toastError }));
 
-import { renderConnectionSection } from './settingsTab';
+import {
+	SectionPage,
+	VocabWeaveSettingTab,
+	renderConnectionSection,
+} from './settingsTab';
 
 // Returns the spy as a plain local (not read back off `plugin`) so assertions like
 // `expect(saveSettings).toHaveBeenCalled()` don't trip @typescript-eslint/unbound-method.
@@ -736,5 +752,100 @@ describe('renderConnectionSection — Save notes to folder', () => {
 		expect(
 			latest('Save notes to').dropdownComponents[0]?.optionOrder,
 		).toEqual(['', 'Japanese', 'Japanese/N2', 'Japanese Advanced']);
+	});
+});
+
+describe('VocabWeaveSettingTab.getSettingDefinitions', () => {
+	function definitions(plugin = fakePlugin().plugin) {
+		return new VocabWeaveSettingTab(
+			{} as never,
+			plugin,
+		).getSettingDefinitions() as SettingDefinitionGroup[];
+	}
+	function item(name: string, plugin?: VocabWeavePlugin) {
+		const found = definitions(plugin)
+			.flatMap((g) => g.items ?? [])
+			.find((i) => i.name === name);
+		if (!found) throw new Error(`no "${name}" item`);
+		return found;
+	}
+
+	it('groups the settings into Anki, AI, and Sync & media', () => {
+		expect(
+			definitions().map((g) => [
+				g.type,
+				g.heading,
+				(g.items ?? []).map((i) => i.name),
+			]),
+		).toEqual([
+			['group', 'Anki', ['Connection & profiles']],
+			[
+				'group',
+				'AI',
+				['Your language', 'AI text provider', 'AI image provider'],
+			],
+			['group', 'Sync & media', ['Auto sync on save', 'Media prefix']],
+		]);
+	});
+
+	it('binds the simple settings to their keys in plugin.settings', () => {
+		const controls = [
+			'Your language',
+			'Auto sync on save',
+			'Media prefix',
+		].map(
+			(name) =>
+				(
+					item(name) as SettingDefinition & {
+						control: { type: string; key: string };
+					}
+				).control,
+		);
+		expect(controls.map((c) => [c.type, c.key])).toEqual([
+			['dropdown', 'nativeLanguage'],
+			['toggle', 'autoSyncOnSave'],
+			['text', 'mediaPrefix'],
+		]);
+	});
+
+	it('offers every language, plus an unset choice', () => {
+		const { control } = item('Your language') as SettingDefinition & {
+			control: { options: Record<string, string> };
+		};
+		expect(Object.keys(control.options)).toEqual(['', ...LANGUAGES]);
+	});
+
+	it('rejects an empty media prefix or one with path characters', async () => {
+		const { control } = item('Media prefix') as SettingDefinition & {
+			control: SettingTextControl;
+		};
+		const validate = control.validate!;
+		expect(await validate('_obsidian_')).toBeUndefined();
+		expect(await validate('')).toBeTruthy();
+		expect(await validate('a/b')).toBeTruthy();
+	});
+
+	it('opens the provider pages with matching titles', () => {
+		for (const name of ['AI text provider', 'AI image provider']) {
+			const page = (item(name) as SettingDefinitionPage).page!();
+			expect(page).toBeInstanceOf(SectionPage);
+			expect(page.title).toBe(name);
+		}
+	});
+
+	it('renders the connection page and stops listening for profile changes on hide', () => {
+		const { plugin, handlers } = fakePlugin();
+		deckNames.mockResolvedValue([]);
+		modelNames.mockResolvedValue([]);
+		const page = (
+			item('Connection & profiles', plugin) as SettingDefinitionPage
+		).page!();
+
+		page.display();
+		expect(latest('AnkiConnect URL')).toBeDefined();
+		expect(handlers.size).toBe(1);
+
+		page.hide();
+		expect(handlers.size).toBe(0);
 	});
 });
